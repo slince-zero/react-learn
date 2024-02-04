@@ -9,7 +9,7 @@ const initialItems = [
 ]
 
 export default function App() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState(initialItems)
   function handleAddItems(item) {
     /**
      * 在React中，setState函数是异步的，这意味着在函数执行后，状态可能并没有立即更新。
@@ -26,12 +26,32 @@ export default function App() {
     // setItems((items) => items.push(item))
   }
 
+  function handleDelete(id) {
+    setItems((items) => items.filter((item) => item.id !== id))
+  }
+
+  function handleToggleItem(id) {
+    setItems((items) =>
+      items.map((item) => {
+        if (item.id === id) {
+          return { ...item, packed: !item.packed }
+        } else {
+          return item
+        }
+      })
+    )
+  }
+
   return (
     <div className="app">
       <Logo />
       <Form onHandleAddItems={handleAddItems} />
-      <PackingList items={items} />
-      <Stats />
+      <PackingList
+        items={items}
+        onhandleDelete={handleDelete}
+        onhandleToggleItem={handleToggleItem}
+      />
+      <Stats items={items} />
     </div>
   )
 }
@@ -79,33 +99,61 @@ function Form({ onHandleAddItems }) {
     </form>
   )
 }
-function PackingList({ items }) {
+function PackingList({ items, onhandleDelete, onhandleToggleItem }) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item key={item.id} item={item} />
+          <Item
+            onhandleDelete={onhandleDelete}
+            onhandleToggleItem={onhandleToggleItem}
+            key={item.id}
+            item={item}
+          />
         ))}
       </ul>
     </div>
   )
 }
 
-function Item({ item }) {
+function Item({ item, onhandleDelete, onhandleToggleItem }) {
   return (
     <li>
+      <input
+        type="checkbox"
+        value={item.packed}
+        onChange={() => onhandleToggleItem(item.id)}
+      />
+      {/* onChange={onhandleToggleItem(item.id)} 这样写会存在问题，每次渲染组件都会调用该函数，*/}
       <span style={{ textDecoration: item.packed ? "line-through" : "none" }}>
         {item.quantity} - {item.description}
       </span>
-      <button>❌</button>
+      <button onClick={() => onhandleDelete(item.id)}>❌</button>
     </li>
   )
 }
 // 底部统计数据
-function Stats() {
+function Stats({ items }) {
+  if (items.length === 0)
+    return (
+      <footer>
+        <p className="stats">
+          <em>为你的旅行准备一些物品吧！🚀</em>
+        </p>
+      </footer>
+    )
+  const numItems = items.length
+  const numPacked = items.filter((item) => item.packed).length
+  const percentage = Math.round((numPacked / numItems) * 100)
+
   return (
     <footer className="stats">
-      你已经有x件物品在清单中，有y(y%)件物品已经被打包
+      <em>
+        {percentage === 100
+          ? "全部清点完毕，准备出发吧！🛸"
+          : `你已经有${numItems}件物品在清单中，有${numPacked}(${percentage}
+        %)件物品已经被打包`}
+      </em>
     </footer>
   )
 }
