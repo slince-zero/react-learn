@@ -41,7 +41,7 @@ function Logo() {
 }
 function Form({ onHandleAddItems }) {
   const [description, setDescription] = useState("")
-  const [quantity, setQuantity] = useState(6)
+  const [quantity, setQuantity] = useState(3)
 
   function handleSubmit(e) {
     e.preventDefault()
