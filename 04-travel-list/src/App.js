@@ -1,4 +1,8 @@
 import { useState } from "react"
+import Logo from "./components/Logo"
+import Form from "./components/Form"
+import PackingList from "./components/PackingList"
+import Stats from "./components/Stats"
 
 const initialItems = [
   { id: 1, description: "身份证", quantity: 2, packed: true },
@@ -58,136 +62,5 @@ export default function App() {
       />
       <Stats items={items} />
     </div>
-  )
-}
-
-function Logo() {
-  return <h1>🦼旅行清单🥗</h1>
-}
-function Form({ onHandleAddItems }) {
-  const [description, setDescription] = useState("")
-  const [quantity, setQuantity] = useState(3)
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (!description) return
-    const newItem = { description, quantity, packed: false, id: Date.now() }
-    onHandleAddItems(newItem)
-    setQuantity(6)
-    setDescription("")
-  }
-
-  return (
-    /**
-     * 如果你希望按钮点击时不触发 "submit" 事件，
-     * 你可以给 <button> 元素添加 type="button" 属性，这将使其成为一个纯按钮，点击时将不会触发表单提交。
-     * button 的 type 属性默认为 "submit"
-     */
-    <form className="add-form" onSubmit={handleSubmit}>
-      <h3>你需要为你的旅行准备什么？👓</h3>
-      <select
-        value={quantity}
-        onChange={(e) => setQuantity(Number(e.target.value))}
-      >
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-          <option key={num} value={num}>
-            {num}
-          </option>
-        ))}
-      </select>
-      <input
-        placeholder="请输入。。。"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      ></input>
-      <button>添加</button>
-    </form>
-  )
-}
-function PackingList({
-  items,
-  onhandleDelete,
-  onhandleToggleItem,
-  onhandleDeleteAll,
-}) {
-  const [sortBy, setSortBy] = useState("input")
-  let sortedItems
-
-  if (sortBy === "input") {
-    sortedItems = items
-  } else if (sortBy === "description") {
-    sortedItems = items
-      .slice()
-      .sort((a, b) => a.description.localeCompare(b.description))
-  } else if (sortBy === "packed") {
-    sortedItems = items
-      .slice()
-      .sort((a, b) => Number(a.packed) - Number(b.packed))
-  }
-
-  return (
-    <div className="list">
-      <ul>
-        {sortedItems.map((item) => (
-          <Item
-            onhandleDelete={onhandleDelete}
-            onhandleToggleItem={onhandleToggleItem}
-            key={item.id}
-            item={item}
-          />
-        ))}
-      </ul>
-
-      <div className="actions">
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="description">按描述排序</option>
-          <option value="input">按输入排序</option>
-          <option value="packed">按装点完毕排序</option>
-        </select>
-        <button onClick={onhandleDeleteAll}>清除所有</button>
-      </div>
-    </div>
-  )
-}
-
-function Item({ item, onhandleDelete, onhandleToggleItem }) {
-  return (
-    <li>
-      <input
-        type="checkbox"
-        value={item.packed}
-        onChange={() => onhandleToggleItem(item.id)}
-      />
-      {/* onChange={onhandleToggleItem(item.id)} 这样写会存在问题，每次渲染组件都会调用该函数，*/}
-      <span style={{ textDecoration: item.packed ? "line-through" : "none" }}>
-        {item.quantity} - {item.description}
-      </span>
-      <button onClick={() => onhandleDelete(item.id)}>❌</button>
-    </li>
-  )
-}
-// 底部统计数据
-function Stats({ items }) {
-  if (items.length === 0)
-    return (
-      <footer>
-        <p className="stats">
-          <em>为你的旅行准备一些物品吧！🚀</em>
-        </p>
-      </footer>
-    )
-  const numItems = items.length
-  const numPacked = items.filter((item) => item.packed).length
-  const percentage = Math.round((numPacked / numItems) * 100)
-
-  return (
-    <footer className="stats">
-      <em>
-        {percentage === 100
-          ? "全部清点完毕，准备出发吧！🛸"
-          : `你已经有${numItems}件物品在清单中，有${numPacked}(${percentage}
-        %)件物品已经被打包`}
-      </em>
-    </footer>
   )
 }
