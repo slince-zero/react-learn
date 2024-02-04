@@ -9,11 +9,28 @@ const initialItems = [
 ]
 
 export default function App() {
+  const [items, setItems] = useState([])
+  function handleAddItems(item) {
+    /**
+     * 在React中，setState函数是异步的，这意味着在函数执行后，状态可能并没有立即更新。
+     * 所以，为了保证状态的准确性，我们应该使用函数式的setState，即给setState提供一个
+     * 函数而不是一个对象。这个函数接受之前的状态作为参数，返回新的状态。
+     */
+    setItems((items) => [...items, item])
+
+    /**
+     * setItems((items) => items.push(item))在这种情况下，可能会导致问题。
+     * 因为push函数会直接修改原有的数组，并返回新数组的长度，而不是返回新数组。
+     * 也就是说，你的新状态会变成一个整数（新数组的长度），而不是你想要的新数组
+     */
+    // setItems((items) => items.push(item))
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
+      <Form onHandleAddItems={handleAddItems} />
+      <PackingList items={items} />
       <Stats />
     </div>
   )
@@ -22,14 +39,15 @@ export default function App() {
 function Logo() {
   return <h1>🦼旅行清单🥗</h1>
 }
-function Form() {
+function Form({ onHandleAddItems }) {
   const [description, setDescription] = useState("")
   const [quantity, setQuantity] = useState(6)
+
   function handleSubmit(e) {
     e.preventDefault()
     if (!description) return
-    const item = { description, quantity, packed: false, id: Date.now() }
-    
+    const newItem = { description, quantity, packed: false, id: Date.now() }
+    onHandleAddItems(newItem)
     setQuantity(6)
     setDescription("")
   }
@@ -61,11 +79,11 @@ function Form() {
     </form>
   )
 }
-function PackingList() {
+function PackingList({ items }) {
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
+        {items.map((item) => (
           <Item key={item.id} item={item} />
         ))}
       </ul>
