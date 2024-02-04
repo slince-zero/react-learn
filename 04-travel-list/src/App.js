@@ -30,6 +30,10 @@ export default function App() {
     setItems((items) => items.filter((item) => item.id !== id))
   }
 
+  function handleDeleteAll() {
+    setItems([])
+  }
+
   function handleToggleItem(id) {
     setItems((items) =>
       items.map((item) => {
@@ -50,6 +54,7 @@ export default function App() {
         items={items}
         onhandleDelete={handleDelete}
         onhandleToggleItem={handleToggleItem}
+        onhandleDeleteAll={handleDeleteAll}
       />
       <Stats items={items} />
     </div>
@@ -99,11 +104,31 @@ function Form({ onHandleAddItems }) {
     </form>
   )
 }
-function PackingList({ items, onhandleDelete, onhandleToggleItem }) {
+function PackingList({
+  items,
+  onhandleDelete,
+  onhandleToggleItem,
+  onhandleDeleteAll,
+}) {
+  const [sortBy, setSortBy] = useState("input")
+  let sortedItems
+
+  if (sortBy === "input") {
+    sortedItems = items
+  } else if (sortBy === "description") {
+    sortedItems = items
+      .slice()
+      .sort((a, b) => a.description.localeCompare(b.description))
+  } else if (sortBy === "packed") {
+    sortedItems = items
+      .slice()
+      .sort((a, b) => Number(a.packed) - Number(b.packed))
+  }
+
   return (
     <div className="list">
       <ul>
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <Item
             onhandleDelete={onhandleDelete}
             onhandleToggleItem={onhandleToggleItem}
@@ -112,6 +137,15 @@ function PackingList({ items, onhandleDelete, onhandleToggleItem }) {
           />
         ))}
       </ul>
+
+      <div className="actions">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="description">按描述排序</option>
+          <option value="input">按输入排序</option>
+          <option value="packed">按装点完毕排序</option>
+        </select>
+        <button onClick={onhandleDeleteAll}>清除所有</button>
+      </div>
     </div>
   )
 }
