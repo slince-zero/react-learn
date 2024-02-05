@@ -33,17 +33,22 @@ function Button({ children, onClick }) {
 }
 
 export default function App() {
+  const [friends, setFriends] = useState(initialFriends)
   const [showFormAddFriend, setShowFormAddFriend] = useState(true)
 
   function handlwShowFormAddFriend() {
     setShowFormAddFriend((show) => !show)
   }
-
+  function handlesAddFriend(newFriend) {
+    setFriends((prevFriends) => [...prevFriends, newFriend])
+  }
   return (
     <div className="app">
       <div className="sidebar">
-        <FriendsList />
-        {showFormAddFriend && <FormAddFriend />}
+        <FriendsList friends={friends} key={friends.id} />
+        {showFormAddFriend && (
+          <FormAddFriend onHandleAddFriend={handlesAddFriend} />
+        )}
         <Button onClick={handlwShowFormAddFriend}>添加朋友</Button>
       </div>
       <FormSplitBill />
@@ -51,9 +56,7 @@ export default function App() {
   )
 }
 
-function FriendsList() {
-  const friends = initialFriends
-
+function FriendsList({ friends }) {
   return friends.map((friend) => <Friend key={friend.id} friend={friend} />)
 }
 
@@ -79,17 +82,30 @@ function Friend({ friend }) {
   )
 }
 
-function FormAddFriend() {
+function FormAddFriend({ onHandleAddFriend }) {
   const [name, setName] = useState("")
-  const [image, setImage] = useState("")
-
+  const [image, setImage] = useState("https://i.pravatar.cc/48")
+  const id = Math.floor(Math.random() * 1000000)
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (!name || !image) return
+    const newFriend = {
+      name,
+      image: `${image}?=${id}`,
+      blance: 0,
+      id,
+    }
+    onHandleAddFriend(newFriend)
+    setName("")
+    setImage("https://i.pravatar.cc/48")
+  }
   return (
-    <form className="form-add-friend">
+    <form className="form-add-friend" onSubmit={handleSubmit}>
       <label>🤼‍♀️ 名字</label>
       {/* 如果没有 onChange ，你的 input 值将会被锁定，无法接收任何用户输入 */}
       <input value={name} onChange={(e) => setName(e.target.value)} />
       <label>🎥头像地址</label>
-      <input />
+      <input value={image} onChange={(e) => setImage(e.target.value)} />
       <Button>添加</Button>
     </form>
   )
