@@ -35,6 +35,7 @@ function Button({ children, onClick }) {
 export default function App() {
   const [friends, setFriends] = useState(initialFriends)
   const [showFormAddFriend, setShowFormAddFriend] = useState(true)
+  const [selectedFriend, setSelectedFriend] = useState(null)
 
   function handlwShowFormAddFriend() {
     setShowFormAddFriend((show) => !show)
@@ -42,27 +43,47 @@ export default function App() {
   function handlesAddFriend(newFriend) {
     setFriends((prevFriends) => [...prevFriends, newFriend])
   }
+
+  function handleSelection(friend) {
+    setSelectedFriend((selected) =>
+      selected?.id === friend.id ? null : friend
+    )
+  }
   return (
     <div className="app">
       <div className="sidebar">
-        <FriendsList friends={friends} key={friends.id} />
+        <FriendsList
+          friends={friends}
+          key={friends.id}
+          selectedFriend={selectedFriend}
+          onHandleSelection={handleSelection}
+        />
         {showFormAddFriend && (
           <FormAddFriend onHandleAddFriend={handlesAddFriend} />
         )}
         <Button onClick={handlwShowFormAddFriend}>添加朋友</Button>
       </div>
-      <FormSplitBill />
+
+      {selectedFriend && <FormSplitBill selectedFriend={selectedFriend} />}
     </div>
   )
 }
 
-function FriendsList({ friends }) {
-  return friends.map((friend) => <Friend key={friend.id} friend={friend} />)
+function FriendsList({ friends, onHandleSelection, selectedFriend }) {
+  return friends.map((friend) => (
+    <Friend
+      key={friend.id}
+      friend={friend}
+      onHandleSelection={onHandleSelection}
+      selectedFriend={selectedFriend}
+    />
+  ))
 }
 
-function Friend({ friend }) {
+function Friend({ friend, onHandleSelection, selectedFriend }) {
+  const isSelected = selectedFriend?.id === friend.id
   return (
-    <li>
+    <li className={isSelected ? "selected" : ""}>
       <img src={friend.image} alt={friend.name} />
       <h3>{friend.name}</h3>
       {friend.balance < 0 && (
@@ -77,7 +98,9 @@ function Friend({ friend }) {
       )}
       {friend.balance === 0 && <p>你和{friend.name}两不相欠</p>}
 
-      <Button>Select</Button>
+      <Button onClick={() => onHandleSelection(friend)}>
+        {isSelected ? "取消" : "选择"}
+      </Button>
     </li>
   )
 }
@@ -111,10 +134,10 @@ function FormAddFriend({ onHandleAddFriend }) {
   )
 }
 
-function FormSplitBill() {
+function FormSplitBill({ selectedFriend }) {
   return (
     <form className="form-split-bill">
-      <h2>和x分割账单</h2>
+      <h2>和{selectedFriend.name}分割账单</h2>
 
       <label>💴 账单金额</label>
       <input></input>
@@ -122,7 +145,7 @@ function FormSplitBill() {
       <label>你的费用</label>
       <input />
 
-      <label>X的费用</label>
+      <label>{selectedFriend.name}的费用</label>
       <input />
 
       <label>谁付了账单</label>
