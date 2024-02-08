@@ -1,70 +1,49 @@
-# Getting Started with Create React App
+## 运行
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+    npm run dev
 
-## Available Scripts
+## 问题，为什么开发者工具下 console 里面会渲染两次
 
-In the project directory, you can run:
+这个现象可能是因为你的 React 项目正在使用严格模式 (React.StrictMode)。在严格模式下，React 会为了找到可能的问题， intentionally double invoke 以下这些生命周期方法和函数组件（即调用两次）：
 
-### `npm start`
+- 类组件的 constructor, render, 和 shouldComponentUpdate 方法
+- 类组件的派生状态 (getDerivedStateFromProps)
+- 函数组件
+- useState 和 useReducer 的更新函数
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 问题，为什么我点击button之后，页面上的值却可以立即变化
+```jsx
+export default function App() {
+  const [user, setUser] = useState("32423")
+  function changeUser() {
+    console.log("user:", user)
+    /** setUser函数的作用是更新 user 的状态，但是 React 的状态是异步的，所以在调用 setUser 之后，user 的值不会立即更新 */
+    setUser(Math.floor(Math.random() * 1000000))
+  }
+  console.log("currentUser:", user)
+  return (
+    <>
+      <h1>dkfjshkj</h1>
+      <User user={user} onChangeUser={changeUser} />
+    </>
+  )
+}
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+function User({ user, onChangeUser }) {
+  return (
+    <>
+      <h1 style={{ color: "yellowgreen" }}>User 组件--{user}</h1>
+      <Button onClick={onChangeUser}>点击试试</Button>
+    </>
+  )
+}
 
-### `npm test`
+function Button({ children, onClick }) {　
+  return <button onClick={onClick}>{children}</button>
+}
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+当调用 setUser 来更新状态时，React 会重新渲染组件，但是在新的渲染中，React 会检查组件的 state 是否与上一次的 state 相同。如果 state 发生了变化，则 React 会重新渲染组件。
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+这是 React 状态更新和重新渲染的工作机制，setUser 调用不会立即改变 user 的值，但是会触发一个更新，然后 React 在更新过程中会使用新的状态值重新渲染组件。 这使得状态的变化能够反应到 UI　上，给你一种“立即更新”的感觉
