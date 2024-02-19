@@ -211,6 +211,8 @@ function WatchedMovieList({ watched }) {
   )
 }
 
+
+
 function WatchedMovie({ movie }) {
   return (
     <li key={movie.imdbID}>
